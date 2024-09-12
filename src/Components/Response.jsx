@@ -25,11 +25,11 @@ const Response = () => {
   }, []);
 
   return (
-    <div className="response-container" onClick={fetchReportsAndVideos}>
+    <div className="response-container">
       <h4>Accident Reports and Videos</h4>
-      <button className="refresh-button" >
-          Refresh
-        </button>
+      <button className="refresh-button" onClick={fetchReportsAndVideos}>
+        Refresh
+      </button>
       {error && <p className="error">Error: {error}</p>}
       <div className="section">
         <h3>Recent Reports</h3>

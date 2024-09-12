@@ -33,9 +33,9 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    align-self: flex-end; /* Keeps the button at the end of the column */
+    align-self:center; /* Keeps the button at the end of the column */
     position: sticky; /* Keeps the button fixed relative to the parent container */
-    bottom: 2;
+    margin-bottom: 5px;
   }
   
   .clear-button:hover {

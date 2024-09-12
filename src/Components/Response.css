@@ -1,6 +1,6 @@
 .response-container {
-    max-width: 800px; /* Adjust width as needed */
-    margin: 0 auto; /* Center the container */
+    width: 800px; /* Adjust width as needed */
+    /* margin: 0px ; Center the container */
     padding: 10px;
     overflow-y: auto;
 }

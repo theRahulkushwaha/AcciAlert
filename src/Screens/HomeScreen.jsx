@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from 'react-router-dom';
 
 import Visuals from "../Components/Visuals";
 import VideoFeed from "../Components/VideoFeed";
@@ -9,19 +10,22 @@ import Response from "../Components/Response";
 import "../Styles/HomeScreen.css";
 
 function HomeScreen() {
+
+  const navigate = useNavigate();
+
   return (
     <div className="HomeScreen">
       <header className="Header">
         <div className="Logo">
-          <img></img>
+          <img src="src\assets\logo.png" className="LogoImg" />
         </div>
         <nav className="Nav">
           <ul className="Menu">
             <li>
-              <a href="#">Home</a>
+              <a onClick={() => navigate('/')}>Home</a>
             </li>
             <li>
-              <a href="#">Feeds</a>
+              <a onClick={() => navigate('/feed')}>Feeds</a>
             </li>
             <li>
               <a href="#">Report</a>
@@ -39,7 +43,7 @@ function HomeScreen() {
             <div className="DataVisual">
               <Visuals />
             </div>
-            <div className="VideoFeed">
+            <div className="VideoFeed" onClick={() => navigate('/feed')}>
               <VideoFeed />
             </div>
             <div className="Alerts">

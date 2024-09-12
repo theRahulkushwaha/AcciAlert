@@ -1,4 +1,4 @@
-from flask import Flask, Response, stream_with_context, jsonify
+from flask import Flask, Response, stream_with_context, jsonify, send_file
 from flask_cors import CORS
 from roboflow import Roboflow
 import cv2
@@ -10,7 +10,7 @@ from reportlab.pdfgen import canvas
 from geopy.distance import great_circle
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app)
 
 # Roboflow API Key
 rf = Roboflow(api_key="v6Ui9NmmYsTVA20xncca")
@@ -46,7 +46,6 @@ def generate_frames():
 
     global saving_video, alert_active, alert_last_detected_time
 
-    # Example latitude and longitude (in practice, you should get actual values)
     latitude = 28.507161
     longitude = 77.017882
 
@@ -60,7 +59,7 @@ def generate_frames():
         if frame_count % frame_skip != 0:
             continue
         
-        input_size = (640, 640) 
+        input_size = (640, 640)
         frame_resized = cv2.resize(frame, input_size)
 
         temp_frame_path = 'temp_frame.jpg'
@@ -112,7 +111,6 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-        # Clean up the temporary file
         os.remove(temp_frame_path)
 
     if detected_accident_frames:
@@ -132,7 +130,7 @@ def alert_stream():
         while True:
             if alerts_list:
                 yield f"data: {alerts_list.pop(0)}\n\n"
-            time.sleep(1) 
+            time.sleep(1)
 
     return Response(generate(), mimetype='text/event-stream')
 
@@ -170,8 +168,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     return great_circle((lat1, lon1), (lat2, lon2)).meters
 
 def save_accident_clip(original_fps, latitude, longitude):
-    """Save detected accident frames as a video clip with slower playback."""
-    slow_fps = original_fps / 3 
+    slow_fps = original_fps / 3
 
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     video_filename = os.path.join(output_dir, f"accident_clip_{timestamp}.mp4")
@@ -184,15 +181,12 @@ def save_accident_clip(original_fps, latitude, longitude):
     out.release()
     print(f"Saved accident clip: {video_filename}")
 
-    # Fetch nearest hospital and police station
     nearest_hospital, nearest_police = get_nearest_places(latitude, longitude)
     
-    # Save report including video and place information
     report_filename = os.path.join(output_dir, f"accident_report_{timestamp}.pdf")
     generate_report(report_filename, latitude, longitude, nearest_hospital, nearest_police, video_filename)
 
 def generate_report(pdf_filename, latitude, longitude, nearest_hospital, nearest_police, video_filename):
-    """Generate a PDF report with accident details."""
     c = canvas.Canvas(pdf_filename, pagesize=letter)
     width, height = letter
 
@@ -222,6 +216,14 @@ def recent_reports():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/accident_clips/<filename>')
+def serve_file(filename):
+    file_path = os.path.join(output_dir, filename)
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        return jsonify({'error': 'File not found'}), 404
 
 @app.route('/alerts')
 def alerts_feed():
