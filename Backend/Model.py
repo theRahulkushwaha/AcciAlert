@@ -13,9 +13,16 @@ app = Flask(__name__)
 CORS(app)
 
 # Roboflow API Key
+print("Loading Roboflow workspace...")
 rf = Roboflow(api_key="v6Ui9NmmYsTVA20xncca")
+
+print("Loading Roboflow project...")
 project = rf.workspace().project("accident_dataset-o5th9")
+
+print("Loading Roboflow model...")
 model = project.version("1").model
+
+print("Roboflow model loaded successfully!")
 
 alerts_list = []
 detected_accident_frames = []
@@ -34,7 +41,6 @@ SEARCH_RADIUS = 5000  # Radius in meters to search for nearby places
 
 def generate_frames():
     video_source = 'car and human accidents.mp4'
-
     if not os.path.exists(video_source):
         print(f"Video file {video_source} not found.")
         return
@@ -65,7 +71,12 @@ def generate_frames():
         temp_frame_path = 'temp_frame.jpg'
         cv2.imwrite(temp_frame_path, frame_resized)
 
-        prediction = model.predict(temp_frame_path, confidence=40).json()
+        try:
+            prediction = model.predict(temp_frame_path, confidence=40).json()
+        except Exception as e:
+            print(f"Error predicting frame: {e}")
+            continue
+        
         predictions = prediction.get('predictions', [])
 
         accident_detected = False
@@ -133,6 +144,25 @@ def alert_stream():
             time.sleep(1)
 
     return Response(generate(), mimetype='text/event-stream')
+
+def get_current_location():
+    try:
+        response = requests.get('https://ipinfo.io/json')
+        data = response.json()
+        location_name = data.get('city', 'Unknown Location')
+        return location_name
+    except Exception as e:
+        print(f"Error fetching current location: {str(e)}")
+        return "Unknown Location"
+
+@app.route('/current-location', methods=['GET'])
+def current_location():
+    try:
+        location_name = get_current_location()
+        return jsonify({'locationName': location_name})
+    except Exception as e:
+        print(f"Error fetching location: {str(e)}")
+        return jsonify({'error': 'Failed to fetch location'}), 500
 
 def get_nearest_places(latitude, longitude):
     overpass_url = f"""
@@ -217,18 +247,45 @@ def recent_reports():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/accident_counts', methods=['GET'])
+def accident_counts():
+    try:
+        # Calculate the counts of each accident type
+        counts = {
+            'car_car_accident': 0,
+            'car_person_accident': 0,
+            'injured': 0
+        }
+        
+        for frame in detected_accident_frames:
+            try:
+                prediction = model.predict(frame, confidence=40).json()
+                predictions = prediction.get('predictions', [])
+                for box in predictions:
+                    label = box['class']
+                    if label in counts:
+                        counts[label] += 1
+            except Exception as e:
+                print(f"Error predicting frame: {e}")
+                continue
+
+        return jsonify(counts)
+    except Exception as e:
+        print(f"Error fetching accident counts: {str(e)}")
+        return jsonify({'error': 'Failed to fetch accident counts'}), 200
+
+
 @app.route('/accident_clips/<filename>')
 def serve_file(filename):
     file_path = os.path.join(output_dir, filename)
-    if os.path.exists(file_path):
-        return send_file(file_path, as_attachment=True)
+    if os.path.isfile(file_path):
+        return send_file(file_path)
     else:
         return jsonify({'error': 'File not found'}), 404
 
 @app.route('/alerts')
-def alerts_feed():
+def alerts():
     return alert_stream()
 
 if __name__ == '__main__':
-    print("Starting Flask server...")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)

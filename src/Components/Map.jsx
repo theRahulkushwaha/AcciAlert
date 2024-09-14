@@ -3,12 +3,11 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Import the icons using Vite's import system
 import hospitalIconUrl from '../assets/hospital.png'; 
 import policeIconUrl from '../assets/police.png'; 
 import LocIconUrl from '../assets/loc.png';
 
-// Custom icons for different types of places
+
 const redIcon = new L.Icon({
   iconUrl: LocIconUrl, 
   iconSize: [25, 41],

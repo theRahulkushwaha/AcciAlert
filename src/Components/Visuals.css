@@ -1,0 +1,22 @@
+.VisualsContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.VisualsChart{
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.RefreshButton{
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 25vh;
+}

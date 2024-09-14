@@ -13,23 +13,26 @@ const Response = () => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      setReports(data.reports);
-      setVideos(data.videos);
+
+      // Update the reports and videos arrays while keeping old data
+      setReports(prevReports => [...new Set([...prevReports, ...data.reports])]);
+      setVideos(prevVideos => [...new Set([...prevVideos, ...data.videos])]);
     } catch (error) {
       setError(error.message);
     }
   };
 
   useEffect(() => {
-    fetchReportsAndVideos();
+    fetchReportsAndVideos(); // Initial fetch
+
+    const intervalId = setInterval(fetchReportsAndVideos, 200); // Fetch every 200ms
+
+    return () => clearInterval(intervalId); // Clear interval on component unmount
   }, []);
 
   return (
     <div className="response-container">
       <h4>Accident Reports and Videos</h4>
-      <button className="refresh-button" onClick={fetchReportsAndVideos}>
-        Refresh
-      </button>
       {error && <p className="error">Error: {error}</p>}
       <div className="section">
         <h3>Recent Reports</h3>

@@ -1,40 +1,45 @@
 .response-container {
-    width: 800px; /* Adjust width as needed */
-    /* margin: 0px ; Center the container */
-    padding: 10px;
-    overflow-y: auto;
+  width: 800px; /* Adjust width as needed */
+  /* margin: 0px ; Center the container */
+  padding: 10px;
+  overflow-y: auto;
 }
 
 .error {
-    color: rgba(255, 0, 0, 0.988);
+  color: rgba(255, 0, 0, 0.988);
+}
+
+.loading {
+  text-align: center;
+  font-weight: bold;
 }
 
 .section {
-    margin-bottom: 20px; /* Increased space between sections */
+  margin-bottom: 20px; /* Increased space between sections */
 }
 
 .scroll-container {
-    max-height: 200px; /* Adjust height as needed */
-    overflow-y: auto;  /* Adds vertical scrollbar if content overflows */
-    border: 1px solid #ddd; /* Optional border for better visibility */
-    padding: 10px; /* Added padding for better aesthetics */
+  max-height: 200px; /* Adjust height as needed */
+  overflow-y: auto; /* Adds vertical scrollbar if content overflows */
+  border: 1px solid #ddd; /* Optional border for better visibility */
+  padding: 10px; /* Added padding for better aesthetics */
 }
 
 .list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
 .list li {
-    margin: 5px 0;
+  margin: 5px 0;
 }
 
 .list a {
-    text-decoration: none;
-    color: #007bff; /* Link color */
+  text-decoration: none;
+  color: #007bff; /* Link color */
 }
 
 .list a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }

@@ -6,6 +6,7 @@ import VideoFeed from "../Components/VideoFeed";
 import Alert from "../Components/Alerts";
 import Map from "../Components/Map";
 import Response from "../Components/Response";
+import Profile from "./Profile"; 
 
 import "../Styles/HomeScreen.css";
 
@@ -28,10 +29,13 @@ function HomeScreen() {
               <a onClick={() => navigate('/feed')}>Feeds</a>
             </li>
             <li>
-              <a href="#">Report</a>
+              <a href="Report">Report</a>
             </li>
             <li>
-              <a href="#">About</a>
+              <a href="About">About</a>
+            </li>
+            <li>
+              <a onClick={() => navigate('/Profile')}>Profile</a>
             </li>
           </ul>
         </nav>
