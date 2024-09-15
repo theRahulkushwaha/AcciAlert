@@ -34,10 +34,11 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={user ? <HomeScreen /> : <Login setUser={setUser} />} />
-          <Route path="/home" element={<HomeScreen />} />
-          <Route path="/feed" element={ <Feed />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup setUser={setUser} />} />
+          <Route path="/home" element={<HomeScreen />} />
+          
+          <Route path="/feed" element={user ? <Feed /> : <Login setUser={setUser} />} />
           <Route path="/Profile" element={<Profile setUser={setUser} />} />
         </Routes>
       </Router>

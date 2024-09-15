@@ -13,13 +13,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Roboflow API Key
-print("Loading Roboflow workspace...")
 rf = Roboflow(api_key="v6Ui9NmmYsTVA20xncca")
-
-print("Loading Roboflow project...")
 project = rf.workspace().project("accident_dataset-o5th9")
-
-print("Loading Roboflow model...")
 model = project.version("1").model
 
 print("Roboflow model loaded successfully!")

@@ -1,22 +1,28 @@
 // src/Screens/Profile.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, signOut } from 'firebase/auth'; 
 
 const Profile = () => {
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('john.doe@example.com');
+  const [name, setName] = useState('Name');
+  const [email, setEmail] = useState('Email');
   const [editMode, setEditMode] = useState(false);
   
   const navigate = useNavigate();
+  const auth = getAuth(); 
 
   // Function to handle logout
   const handleLogout = () => {
-    // Perform logout logic here if needed, e.g., clearing tokens or local storage
-    navigate('/login'); // Redirect to the login page
-    alert('Logged out successfully!');
+    signOut(auth)
+      .then(() => {
+        navigate('/login');
+        alert('Logged out successfully!');
+      })
+      .catch((error) => {
+        console.error('Error logging out: ', error);
+      });
   };
 
-  // Function to save updated profile information
   const handleSave = () => {
     setEditMode(false);
     alert('Profile information saved!');
