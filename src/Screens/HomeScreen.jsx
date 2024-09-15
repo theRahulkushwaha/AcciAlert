@@ -29,7 +29,7 @@ function HomeScreen() {
               <a onClick={() => navigate('/feed')}>Feeds</a>
             </li>
             <li>
-              <a href="Report">Report</a>
+              <a onClick={()=>navigate('/reports')}>Report</a>
             </li>
             <li>
               <a href="About">About</a>

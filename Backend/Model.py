@@ -8,6 +8,7 @@ import requests
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from geopy.distance import great_circle
+from flask import send_file
 
 app = Flask(__name__)
 CORS(app)
@@ -31,9 +32,10 @@ alert_active = False
 alert_last_detected_time = 0
 
 # Define constants
-ALERT_COOLDOWN_TIME = 1  
+ALERT_COOLDOWN_TIME = 1  # Alert cooldown time
 SEARCH_RADIUS = 5000  # Radius in meters to search for nearby places
 
+# Function to generate video frames and detect accidents
 def generate_frames():
     video_source = 'car and human accidents.mp4'
     if not os.path.exists(video_source):
@@ -41,9 +43,9 @@ def generate_frames():
         return
     
     cap = cv2.VideoCapture(video_source)
-    frame_skip = 7  
+    frame_skip = 7  # Skips frames for faster processing
     frame_count = 0
-    fps = cap.get(cv2.CAP_PROP_FPS)  
+    fps = cap.get(cv2.CAP_PROP_FPS)  # Frames per second
 
     global saving_video, alert_active, alert_last_detected_time
 
@@ -85,8 +87,7 @@ def generate_frames():
             
             color = (0, 255, 0)  # Default color (green)
             if label in ['car_car_accident', 'injured', 'car_person_accident']: 
-                color = (0, 0, 255)  # Red color 
-
+                color = (0, 0, 255)  # Red color for accidents
                 accident_detected = True
                 send_alert(label)
 
@@ -125,11 +126,13 @@ def generate_frames():
 
     cap.release()
 
+# Send alerts in case of accidents
 def send_alert(label):
     alert_message = f"ALERT: {label} detected!"
     alerts_list.append(alert_message)
     print(alert_message)
 
+# Stream alerts
 def alert_stream():
     @stream_with_context
     def generate():
@@ -140,6 +143,7 @@ def alert_stream():
 
     return Response(generate(), mimetype='text/event-stream')
 
+# Fetch the current location based on IP address
 def get_current_location():
     try:
         response = requests.get('https://ipinfo.io/json')
@@ -159,6 +163,7 @@ def current_location():
         print(f"Error fetching location: {str(e)}")
         return jsonify({'error': 'Failed to fetch location'}), 500
 
+# Get the nearest hospital and police station based on coordinates
 def get_nearest_places(latitude, longitude):
     overpass_url = f"""
     https://overpass-api.de/api/interpreter?data=[out:json];
@@ -189,9 +194,11 @@ def get_nearest_places(latitude, longitude):
 
     return nearest_hospital, nearest_police
 
+# Calculate distance between two GPS coordinates
 def calculate_distance(lat1, lon1, lat2, lon2):
     return great_circle((lat1, lon1), (lat2, lon2)).meters
 
+# Save accident video clip and generate PDF report
 def save_accident_clip(original_fps, latitude, longitude):
     slow_fps = original_fps / 3
 
@@ -211,6 +218,7 @@ def save_accident_clip(original_fps, latitude, longitude):
     report_filename = os.path.join(output_dir, f"accident_report_{timestamp}.pdf")
     generate_report(report_filename, latitude, longitude, nearest_hospital, nearest_police, video_filename)
 
+# Generate a PDF report for each detected accident
 def generate_report(pdf_filename, latitude, longitude, nearest_hospital, nearest_police, video_filename):
     c = canvas.Canvas(pdf_filename, pagesize=letter)
     width, height = letter
@@ -225,10 +233,12 @@ def generate_report(pdf_filename, latitude, longitude, nearest_hospital, nearest
     c.save()
     print(f"Saved accident report: {pdf_filename}")
 
+# Serve the video stream
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+# Get recent reports and videos
 @app.route('/recent_reports', methods=['GET'])
 def recent_reports():
     try:
@@ -242,42 +252,33 @@ def recent_reports():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/accident_counts', methods=['GET'])
-def accident_counts():
+# Serve individual report files
+# Serve individual report files
+@app.route('/reports/<filename>', methods=['GET'])
+def serve_report(filename):
     try:
-        # Calculate the counts of each accident type
-        counts = {
-            'car_car_accident': 0,
-            'car_person_accident': 0,
-            'injured': 0
-        }
-        
-        for frame in detected_accident_frames:
-            try:
-                prediction = model.predict(frame, confidence=40).json()
-                predictions = prediction.get('predictions', [])
-                for box in predictions:
-                    label = box['class']
-                    if label in counts:
-                        counts[label] += 1
-            except Exception as e:
-                print(f"Error predicting frame: {e}")
-                continue
-
-        return jsonify(counts)
+        report_path = os.path.join(output_dir, filename)
+        if os.path.isfile(report_path):
+            return send_file(report_path, as_attachment=False)
+        else:
+            return jsonify({'error': 'Report not found'}), 404
     except Exception as e:
-        print(f"Error fetching accident counts: {str(e)}")
-        return jsonify({'error': 'Failed to fetch accident counts'}), 200
+        return jsonify({'error': str(e)}), 500  # Indented block added here
 
 
-@app.route('/accident_clips/<filename>')
-def serve_file(filename):
-    file_path = os.path.join(output_dir, filename)
-    if os.path.isfile(file_path):
-        return send_file(file_path)
-    else:
-        return jsonify({'error': 'File not found'}), 404
+# Serve individual video files
+@app.route('/videos/<filename>', methods=['GET'])
+def serve_video(filename):
+    try:
+        video_path = os.path.join(output_dir, filename)
+        if os.path.isfile(video_path):
+            return send_file(video_path, as_attachment=False)
+        else:
+            return jsonify({'error': 'Video not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
+# Serve alerts
 @app.route('/alerts')
 def alerts():
     return alert_stream()

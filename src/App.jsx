@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'; 
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route,  } from 'react-router-dom';
 import './App.css';
 import 'leaflet/dist/leaflet.css';
 import { auth } from './firebaseConfig';  
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged,  } from 'firebase/auth'; 
 
 import HomeScreen from './Screens/HomeScreen';
-import Feed from './Screens/Feed';
+import Feed from './Screens/Feed';    
 import Signup from './Screens/Signup';
 import Login from './Screens/Login';
-import Profile from './Screens/Profile';
+import Profile from './Screens/Profile'
+import ReportsPage from './Screens/ReportsPage';
+
 
 function App() {
   const [user, setUser] = useState(null);  
@@ -29,7 +31,7 @@ function App() {
     return <div>Loading...</div>;
   }
 
-  return (
+  return (   
     <>
       <Router>
         <Routes>
@@ -37,7 +39,8 @@ function App() {
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup setUser={setUser} />} />
           <Route path="/home" element={<HomeScreen />} />
-          
+          <Route path="/reports" element={user ? <ReportsPage /> : <Login setUser={setUser} />} />
+
           <Route path="/feed" element={user ? <Feed /> : <Login setUser={setUser} />} />
           <Route path="/Profile" element={<Profile setUser={setUser} />} />
         </Routes>
