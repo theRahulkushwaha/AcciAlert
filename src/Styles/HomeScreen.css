@@ -37,10 +37,16 @@
     margin-right: 20px;
 }
 
-.Menu li a{
+.Menu li a {
     text-decoration: none;
     color: black;
     cursor: pointer;
+}
+
+.Menu li a.active:hover {
+    /* text-decoration: underline; */
+    color: rgb(23, 80, 185);
+    font-weight: bold   ;
 }
 
 .Body{
